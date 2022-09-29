@@ -9,6 +9,7 @@ Build a Kubernetes cluster using Ansible with k3s. The goal is easily install a 
 - [X] Debian
 - [X] Ubuntu
 - [X] CentOS
+- [X] Rocky
 
 on processor architecture:
 
@@ -18,7 +19,11 @@ on processor architecture:
 
 ## System requirements
 
-Deployment environment must have Ansible 2.4.0+
+Deployment environment must have Ansible 2.12.2+
+You must install the following modules
+for SElinux: ansible-galaxy collection install ansible.posix
+for modprobe: ansible-galaxy collection install community.general
+
 Master and nodes must have passwordless SSH access
 
 ## Usage
