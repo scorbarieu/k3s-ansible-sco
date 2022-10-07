@@ -7,7 +7,6 @@
   failed_when: false
   with_items:
     - k3s
-    - k3s-node
 
 - name: pkill -9 -f "k3s/data/[^/]+/bin/containerd-shim-runc"
   register: pkill_containerd_shim_runc
@@ -32,7 +31,6 @@
   with_items:
     - /usr/local/bin/k3s
     - "{{ systemd_dir }}/k3s.service"
-    - "{{ systemd_dir }}/k3s-node.service"
     - /etc/rancher/k3s
     - /var/lib/kubelet
     - /var/lib/rancher/k3s

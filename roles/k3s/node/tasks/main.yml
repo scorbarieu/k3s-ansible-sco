@@ -3,14 +3,51 @@
 - name: Copy K3s service file
   template:
     src: "k3s.service.j2"
-    dest: "{{ systemd_dir }}/k3s-node.service"
+    dest: "{{ systemd_dir }}/k3s.service"
     owner: root
     group: root
     mode: 0755
 
 - name: Enable and check K3s service
   systemd:
-    name: k3s-node
+    name: k3s
     daemon_reload: yes
     state: restarted
     enabled: yes
+- name: Create directory .kube
+  file:
+    path: ~{{ ansible_user }}/.kube
+    state: directory
+    owner: "{{ ansible_user }}"
+    mode: "u=rwx,g=rx,o="
+
+- name: Copy config file to user home directory
+  copy:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: ~{{ ansible_user }}/.kube/config
+    remote_src: yes
+    owner: "{{ ansible_user }}"
+    mode: "u=rw,g=,o="
+  when: node_type == 'server'
+
+- name: Replace https://localhost:6443 by https://ansible_host:6443
+  command: >-
+    k3s kubectl config set-cluster default
+      --server=https://{{ ansible_host }}:6443
+      --kubeconfig ~{{ ansible_user }}/.kube/config
+  changed_when: true
+  when: node_type == 'server'
+
+- name: Create kubectl symlink
+  file:
+    src: /usr/local/bin/k3s
+    dest: /usr/local/bin/kubectl
+    state: link
+  when: node_type == 'server'
+
+- name: Create crictl symlink
+  file:
+    src: /usr/local/bin/k3s
+    dest: /usr/local/bin/crictl
+    state: link
+  when: node_type == 'server'

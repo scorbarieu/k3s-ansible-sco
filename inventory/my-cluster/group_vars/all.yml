@@ -1,7 +1,12 @@
 ---
-k3s_version: v1.22.3+k3s1
+k3s_version: v1.25.2+k3s1
 ansible_user: rocky
 systemd_dir: /etc/systemd/system
 master_ip: "{{ hostvars[groups['master'][0]]['ansible_host'] | default(groups['master'][0]) }}"
-extra_server_args: "--cluster-init"
+# for cluster HA use:
+#extra_server_args: "--flannel-backend=wireguard --cluster-init"
+#extra_agent_args: "--flannel-backend=wireguard"
+# for non HA cluster use:
+extra_server_args: "--flannel-backend=wireguard" # "--cluster-init"
 extra_agent_args: ""
+k3s_server_location: /var/lib/rancher/k3s
