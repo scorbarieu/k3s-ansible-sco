@@ -91,6 +91,9 @@ d2-4-gra5-pub-m-nifi-k3s1   Ready    control-plane,etcd,master   4d13h   v1.22.3
 d2-4-gra5-pub-m-nifi-k3s2   Ready    control-plane,etcd,master   4d9h    v1.22.3+k3s1
 d2-4-gra5-pub-m-nifi-k3s3   Ready    control-plane,etcd,master   4d9h    v1.22.3+k3s1
 ```
+### Check Network and DNS resolution
+https://kubernetes.io/docs/tasks/administer-cluster/dns-debugging-resolution/
+
 
 ### install helm
 ```bash
@@ -104,6 +107,18 @@ sudo dnf -y  install iscsi-initiator-utils
 sudo dnf install nfs-utils -y
 ```
 TODO enable Mount propagation on containerd
+```bash
+kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/master/deploy/longhorn.yaml
+#then set up the UI access
+USER=<USERNAME_HERE>; PASSWORD=<PASSWORD_HERE>; echo "${USER}:$(openssl passwd -stdin -apr1 <<< ${PASSWORD})" >> auth
+kubectl -n longhorn-system create secret generic basic-auth --from-file=auth
+kubectl -n longhorn-system apply -f appsamples/longhorningress.yaml
+# EXAMPLE create a storage class
+kubectl create -f https://raw.githubusercontent.com/longhorn/longhorn/master/examples/storageclass.yaml
+# EXAMPLE create a PV and pod (not WORKING on vagrant rocky8...yet... volome created but failed to attach to container)
+kubectl create -f https://raw.githubusercontent.com/longhorn/longhorn/master/examples/pod_with_pvc.yaml
+
+```
 
 ## OPTIONNAL INSTALL/EXAMPLES
 

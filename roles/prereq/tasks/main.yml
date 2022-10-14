@@ -1,4 +1,10 @@
 ---
+- name: Make sure a firewalld unit is disabled
+  ansible.builtin.systemd:
+    state: stopped
+    enabled: no
+    name: firewalld
+
 - name: Set SELinux to disabled state
   ansible.posix.selinux:
     state: disabled

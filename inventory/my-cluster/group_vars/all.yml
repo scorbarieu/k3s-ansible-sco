@@ -1,12 +1,20 @@
 ---
 k3s_version: v1.25.2+k3s1
-ansible_user: rocky
+ansible_user: vagrant # rocky
 systemd_dir: /etc/systemd/system
 master_ip: "{{ hostvars[groups['master'][0]]['ansible_host'] | default(groups['master'][0]) }}"
-# for cluster HA use:
-#extra_server_args: "--flannel-backend=wireguard --cluster-init"
-#extra_agent_args: "--flannel-backend=wireguard"
-# for non HA cluster use:
-extra_server_args: "--flannel-backend=wireguard" # "--cluster-init"
-extra_agent_args: ""
+# for cluster HA and wireguard flannel CNI use:
+# extra_server_args: "--flannel-backend=wireguard --cluster-init"
+# extra_agent_args: "--flannel-backend=wireguard"
+
+# OR with VXLAN by default (insecured inter cluster com)
+# extra_server_args: "--cluster-init"
+# extra_agent_args: ""
+
+# for HA cluster and not using the default eth0 (vagrant issue) use:
+extra_server_args: "--cluster-init --flannel-iface=eth1"
+extra_agent_args: "--flannel-iface=eth1"
+
 k3s_server_location: /var/lib/rancher/k3s
+# this is to force the default python3 to be used as some dependencies like libselinux are not availble on other versions of python installed
+ansible_python_interpreter: /usr/bin/python3
