@@ -67,22 +67,59 @@ Start provisioning of the cluster using the following command:
 ansible-playbook site.yml -i inventory/my-cluster/hosts.ini
 ```
 
-## Kubeconfig
+## Kuebctl (OTIONNAL)
 
-To get access to your **Kubernetes** cluster from your local machine if you DON'T already HAVE a config file just use
+You can get access to your **Kubernetes** cluster from any of the nodes but also from your local machine:
+
+First download kubectl :
+
+On Windows use MobaXterm or any unix friendly environement (WSL or such)
 
 ```bash
-scp debian@master_ip:~/.kube/config ~/.kube/config
+KUBECTL_VERSION=v1.24.0
+curl -L "https://dl.k8s.io/release/$KUBECTL_VERSION/bin/windows/amd64/kubectl.exe" -o /drives/c/Users/corbarieus/AppData/Local/Microsoft/WindowsApps/kubectl.exe
+# copy the file in your home dir
+cd
+mkdir .kube
+scp rocky@master_ip:~/.kube/config ~/.kube/config
+# check
+kubectl cluster-info
 ```
-## Post installs
 
-### 
+or Powershell
+
+```powershell
+$KUBECTL_VERSION = v1.24.0
+Invoke-WebRequest `
+ -Uri https://dl.k8s.io/release/$KUBECTL_VERSION/bin/windows/amd64/kubectl.exe `
+mv kubectl.exe C:\Users\corbarieus\AppData\Local\Microsoft\WindowsApps\
+scp rocky@master_ip:~/.kube/config ~/.kube/config
+# check
+kubectl cluster-info
+```
+or from Powershell
+
+
+### kubectl bash auto completion (RECOMMENDED)
 ```bash
 sudo dnf install bash-completion
 kubectl completion bash | sudo tee /etc/bash_completion.d/kubectl > /dev/null
 ```
+on Windows:
+```powershell
+ mkdir C:\Users\corbarieus\Documents\WindowsPowerShell
+ kubectl completion powershell >> $PROFILE
+ ```
 
-### check nodes
+ 
+## Post installs
+
+Feeling Lazy ? Run this script (but take a look below of what it does)
+```bash
+scripts/postinstall.sh
+```
+
+### check nodes (RECOMMENDED)
 ```
 kubectl get nodes
 
@@ -91,15 +128,47 @@ d2-4-gra5-pub-m-nifi-k3s1   Ready    control-plane,etcd,master   4d13h   v1.22.3
 d2-4-gra5-pub-m-nifi-k3s2   Ready    control-plane,etcd,master   4d9h    v1.22.3+k3s1
 d2-4-gra5-pub-m-nifi-k3s3   Ready    control-plane,etcd,master   4d9h    v1.22.3+k3s1
 ```
-### Check Network and DNS resolution
+### Check Network and DNS resolution (OTIONNAL)
 https://kubernetes.io/docs/tasks/administer-cluster/dns-debugging-resolution/
 
 
-### install helm
+### install helm (RECOMMENDED)
 ```bash
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 ```
-### install longhorn block storage
+
+
+#### certmanager (RECOMMENDED)
+This is used by lots of software to manage certificate generation/rotation automatically in deployments
+
+```bash
+# If you have installed the CRDs manually instead of with the `--set installCRDs=true` option added to your Helm install command, you should upgrade your CRD resources before upgrading the Helm chart:
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.7.1/cert-manager.crds.yaml
+
+# Add the Jetstack Helm repository
+helm repo add jetstack https://charts.jetstack.io
+
+# Update your local Helm chart repository cache
+helm repo update
+
+# Install the cert-manager Helm chart
+helm install cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --create-namespace \
+  --version v1.7.1 \
+  --set installCRDs=true
+```
+
+### install rancher (RECOMMENDED)
+```bash
+helm repo add rancher-stable https://releases.rancher.com/server-charts/stable
+helm install rancher rancher-stable/rancher \
+  --namespace cattle-system \
+  --set hostname=rancher.my.org \
+  --set bootstrapPassword=admin
+```
+
+### install longhorn block storage (RECOMMENDED)
 #### pre-req for longhorn storage for K3s
 
 ```bash
@@ -133,24 +202,7 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 helm install zookeeper bitnami/zookeeper     --set resources.requests.memory=256Mi     --set resources.requests.cpu=250m     --set resources.limits.memory=256Mi     --set resources.limits.cpu=250m     --set global.storageClass=local-path     --set networkPolicy.enabled=true     --set replicaCount=3 --namespace nifi --create-namespace
 ```
 
-#### certmanager
-```bash
-# If you have installed the CRDs manually instead of with the `--set installCRDs=true` option added to your Helm install command, you should upgrade your CRD resources before upgrading the Helm chart:
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.7.1/cert-manager.crds.yaml
 
-# Add the Jetstack Helm repository
-helm repo add jetstack https://charts.jetstack.io
-
-# Update your local Helm chart repository cache
-helm repo update
-
-# Install the cert-manager Helm chart
-helm install cert-manager jetstack/cert-manager \
-  --namespace cert-manager \
-  --create-namespace \
-  --version v1.7.1 \
-  --set installCRDs=true
-```
 #### Nifi Kop 
 
 It is the K8s operator that will make it possible to deploy state of the art Nifi cluster on demand with almost no worries (PaaS)

@@ -1,5 +1,5 @@
 ---
-k3s_version: v1.25.2+k3s1
+k3s_version:  v1.24.6+k3s1
 ansible_user: vagrant # rocky
 systemd_dir: /etc/systemd/system
 master_ip: "{{ hostvars[groups['master'][0]]['ansible_host'] | default(groups['master'][0]) }}"
@@ -12,8 +12,8 @@ master_ip: "{{ hostvars[groups['master'][0]]['ansible_host'] | default(groups['m
 # extra_agent_args: ""
 
 # for HA cluster and not using the default eth0 (vagrant issue) use:
-extra_server_args: "--cluster-init --flannel-iface=eth1"
-extra_agent_args: "--flannel-iface=eth1"
+extra_server_args: "--cluster-init --flannel-iface=eth1 --write-kubeconfig-mode 644"
+extra_agent_args: "--flannel-iface=eth1 --write-kubeconfig-mode 644"
 
 k3s_server_location: /var/lib/rancher/k3s
 # this is to force the default python3 to be used as some dependencies like libselinux are not availble on other versions of python installed
