@@ -97,7 +97,6 @@ scp rocky@master_ip:~/.kube/config ~/.kube/config
 # check
 kubectl cluster-info
 ```
-or from Powershell
 
 
 ### kubectl bash auto completion (RECOMMENDED)
@@ -137,6 +136,16 @@ https://kubernetes.io/docs/tasks/administer-cluster/dns-debugging-resolution/
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 ```
 
+### helm auto completion (RECOMMENDED)
+```bash
+sudo dnf install bash-completion
+helm completion bash | sudo tee /etc/bash_completion.d/kubectl > /dev/null
+```
+on Windows:
+```powershell
+ mkdir C:\Users\corbarieus\Documents\WindowsPowerShell
+ helm completion powershell >> $PROFILE
+ ```
 
 #### certmanager (RECOMMENDED)
 This is used by lots of software to manage certificate generation/rotation automatically in deployments
@@ -199,34 +208,21 @@ https://konpyutaika.github.io/nifikop/docs/2_deploy_nifikop/1_quick_start
 ```bash
 helm repo add bitnami https://charts.bitnami.com/bitnami
 
-helm install zookeeper bitnami/zookeeper     --set resources.requests.memory=256Mi     --set resources.requests.cpu=250m     --set resources.limits.memory=256Mi     --set resources.limits.cpu=250m     --set global.storageClass=local-path     --set networkPolicy.enabled=true     --set replicaCount=3 --namespace nifi --create-namespace
+helm install zookeeper bitnami/zookeeper     --set resources.requests.memory=256Mi     --set resources.requests.cpu=250m     --set resources.limits.memory=256Mi     --set resources.limits.cpu=250m     --set global.storageClass=longhorn     --set networkPolicy.enabled=true     --set replicaCount=3 --namespace nifi --create-namespace
 ```
 
 
 #### Nifi Kop 
 
 It is the K8s operator that will make it possible to deploy state of the art Nifi cluster on demand with almost no worries (PaaS)
+reference : https://github.com/konpyutaika/nifiko
+https://konpyutaika.github.io/nifikop
 
 ```bash
-helm install nifikop \
-    oci://ghcr.io/konpyutaika/helm-charts/nifikop \
-    --namespace=nifikop \
-    --version 0.14.1 \
-    --set image.tag=v0.14.1-release \
-    --set resources.requests.memory=256Mi \
-    --set resources.requests.cpu=250m \
-    --set resources.limits.memory=256Mi \
-    --set resources.limits.cpu=250m \
-    --set namespaces={"nifikop"}
+helm install nifikop oci://ghcr.io/konpyutaika/helm-charts/nifikop --namespace=nifi --version 0.14.1 --set image.tag=v0.14.1-release --set resources.requests.memory=256Mi --set resources.requests.cpu=250m --set resources.limits.memory=256Mi --set resources.limits.cpu=250m --set namespaces={"nifi"}
 ```
 
 #### Nifi simple cluster
 ```bash
-#get a sample deployment file:
-
-curl -o simplenificluster.yaml https://raw.githubusercontent.com/konpyutaika/nifikop/master/config/samples/simplenificluster.yaml
+kubectl create -f appsamples/simplenificluster.yaml -n nifi
 ```
-
-change this line in the file
-storageClassName: "local-path"
-

@@ -7,7 +7,7 @@ spec:
     headlessEnabled: true
     labels:
       cluster-name: simplenifi
-  zkAddress: "zookeeper.zookeeper:2181"
+  zkAddress: "zookeeper.nifi.svc.cluster.local:2181"
   zkPath: /simplenifi
   externalServices:
     - metadata:
@@ -35,15 +35,68 @@ spec:
       isNode: true
       serviceAccountName: default
       storageConfigs:
-        - mountPath: "/opt/nifi/nifi-current/logs"
+        - mountPath: /opt/nifi/nifi-current/logs
           name: logs
           pvcSpec:
             accessModes:
               - ReadWriteOnce
-            storageClassName: "local-path"
             resources:
               requests:
-                storage: 10Gi
+                storage: 5Gi
+            storageClassName: longhorn
+        - mountPath: /opt/nifi/data
+          name: data
+          pvcSpec:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 5Gi
+            storageClassName: longhorn
+        - mountPath: /opt/nifi/extensions
+          name: extensions-repository
+          pvcSpec:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 1Gi
+            storageClassName: longhorn
+        - mountPath: /opt/nifi/flowfile_repository
+          name: flowfile-repository
+          pvcSpec:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 5Gi
+            storageClassName: longhorn
+        - mountPath: /opt/nifi/nifi-current/conf
+          name: conf
+          pvcSpec:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 1Gi
+            storageClassName: longhorn
+        - mountPath: /opt/nifi/content_repository
+          name: content-repository
+          pvcSpec:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 5Gi
+            storageClassName: longhorn
+        - mountPath: /opt/nifi/provenance_repository
+          name: provenance-repository
+          pvcSpec:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 5Gi
       resourcesRequirements:
         limits:
           cpu: "0.5"
