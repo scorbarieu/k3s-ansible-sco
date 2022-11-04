@@ -72,6 +72,18 @@ ansible-playbook site.yml -i inventory/my-cluster/hosts.ini
 You can get access to your **Kubernetes** cluster from any of the nodes but also from your local machine:
 
 First download kubectl :
+On Linux:
+```bash
+curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.25.0/bin/linux/amd64/kubectl
+chmod +x ./kubectl
+sudo mv ./kubectl /usr/local/bin/kubectl
+cd
+mkdir .kube
+scp rocky@master_ip:~/.kube/config ~/.kube/config
+# check
+kubectl cluster-info
+
+```
 
 On Windows use MobaXterm or any unix friendly environement (WSL or such)
 
@@ -181,12 +193,32 @@ helm install rancher rancher-stable/rancher \
 #### pre-req for longhorn storage for K3s
 
 ```bash
+# pre-req for longhorn storage for K3s
 sudo dnf -y  install iscsi-initiator-utils
+sudo systemctl enable iscsid
+sudo systemctl start iscsid
 sudo dnf install nfs-utils -y
 ```
 TODO enable Mount propagation on containerd
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/master/deploy/longhorn.yaml
+
+#check pre-req
+sudo dnf install jq -y # required by the script
+curl -sSfL https://raw.githubusercontent.com/longhorn/longhorn/v1.3.1/scripts/environment_check.sh | bash
+```
+#### Install longhorn storage for K3s
+
+```bash
+# install longhorn
+# kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/master/deploy/longhorn.yaml
+# or with helm
+helm repo add longhorn https://charts.longhorn.io
+helm repo update
+DATAPATH="/data/longhorn"
+helm install longhorn longhorn/longhorn \
+  --namespace longhorn-system \
+  --create-namespace \
+  --set defaultSettings.defaultDataPath=${DATAPATH}
 #then set up the UI access
 USER=<USERNAME_HERE>; PASSWORD=<PASSWORD_HERE>; echo "${USER}:$(openssl passwd -stdin -apr1 <<< ${PASSWORD})" >> auth
 kubectl -n longhorn-system create secret generic basic-auth --from-file=auth
@@ -207,7 +239,7 @@ https://konpyutaika.github.io/nifikop/docs/2_deploy_nifikop/1_quick_start
 
 ```bash
 helm repo add bitnami https://charts.bitnami.com/bitnami
-
+helm repo update
 helm install zookeeper bitnami/zookeeper     --set resources.requests.memory=256Mi     --set resources.requests.cpu=250m     --set resources.limits.memory=256Mi     --set resources.limits.cpu=250m     --set global.storageClass=longhorn     --set networkPolicy.enabled=true     --set replicaCount=3 --namespace nifi --create-namespace
 ```
 
