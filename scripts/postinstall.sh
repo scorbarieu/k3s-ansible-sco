@@ -4,6 +4,7 @@ CERTMANAGER_VERSION=v1.7.1
 ADMINPASSWORD=TestMeteo#2022
 LONGHORNUIUSER=longhorn; 
 LONGHORNUIPASSWORD=$ADMINPASSWORD;
+DATAPATH="/data/longhorn"
 #ADMINUSER=vagrant #requires sudo
 CLUSTERADMINUSER=corbarieus
 CLUSTERMASTER=nifif31-sidev.meteo.fr
@@ -52,7 +53,14 @@ curl -sSfL https://raw.githubusercontent.com/longhorn/longhorn/v1.3.1/scripts/en
 if [ $? == 0 ]; then
     echo "########################### longhorn pre-requisites OK: proceeding ###########################"
 
-    kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/master/deploy/longhorn.yaml
+    #kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/master/deploy/longhorn.yaml
+    helm repo add longhorn https://charts.longhorn.io
+    helm repo update
+    
+    helm install longhorn longhorn/longhorn \
+    --namespace longhorn-system \
+    --create-namespace \
+    --set defaultSettings.defaultDataPath=${DATAPATH}
     #then set up the UI access
     echo "${LONGHORNUIUSER}:$(openssl passwd -stdin -apr1 <<< ${LONGHORNUIPASSWORD})" >> auth
     kubectl -n longhorn-system create secret generic basic-auth --from-file=auth
