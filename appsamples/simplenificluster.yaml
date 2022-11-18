@@ -20,7 +20,7 @@ spec:
             port: 8080
         type: LoadBalancer
   clusterImage: "apache/nifi:1.15.3"
-  initContainerImage: 'busybox:1.34.0'
+  initContainerImage: 'bash:5.2.2'
   oneNifiNodePerNode: true
   readOnlyConfig:
     nifiProperties:
@@ -34,16 +34,19 @@ spec:
       imagePullPolicy: IfNotPresent
       isNode: true
       serviceAccountName: default
+      # provenanceStorage allow to specify the maximum amount of data provenance information to store at a time
+      # https://nifi.apache.org/docs/nifi-docs/html/administration-guide.html#write-ahead-provenance-repository-properties
+      provenanceStorage: "1 GB"
       storageConfigs:
-        - mountPath: /opt/nifi/nifi-current/logs
+        - mountPath: "/opt/nifi/nifi-current/logs"
           name: logs
           pvcSpec:
             accessModes:
               - ReadWriteOnce
             resources:
               requests:
-                storage: 5Gi
-            storageClassName: longhorn
+                storage: 1Gi
+            storageClassName: "longhorn-wait"
         - mountPath: /opt/nifi/data
           name: data
           pvcSpec:
@@ -51,8 +54,8 @@ spec:
               - ReadWriteOnce
             resources:
               requests:
-                storage: 5Gi
-            storageClassName: longhorn
+                storage: 1Gi
+            storageClassName: "longhorn-wait"
         - mountPath: /opt/nifi/extensions
           name: extensions-repository
           pvcSpec:
@@ -61,7 +64,7 @@ spec:
             resources:
               requests:
                 storage: 1Gi
-            storageClassName: longhorn
+            storageClassName: "longhorn-wait"
         - mountPath: /opt/nifi/flowfile_repository
           name: flowfile-repository
           pvcSpec:
@@ -69,8 +72,8 @@ spec:
               - ReadWriteOnce
             resources:
               requests:
-                storage: 5Gi
-            storageClassName: longhorn
+                storage: 1Gi
+            storageClassName: "longhorn-wait"
         - mountPath: /opt/nifi/nifi-current/conf
           name: conf
           pvcSpec:
@@ -79,7 +82,7 @@ spec:
             resources:
               requests:
                 storage: 1Gi
-            storageClassName: longhorn
+            storageClassName: "longhorn-wait"
         - mountPath: /opt/nifi/content_repository
           name: content-repository
           pvcSpec:
@@ -87,8 +90,8 @@ spec:
               - ReadWriteOnce
             resources:
               requests:
-                storage: 5Gi
-            storageClassName: longhorn
+                storage: 1Gi
+            storageClassName: "longhorn-wait"
         - mountPath: /opt/nifi/provenance_repository
           name: provenance-repository
           pvcSpec:
@@ -96,7 +99,8 @@ spec:
               - ReadWriteOnce
             resources:
               requests:
-                storage: 5Gi
+                storage: 1Gi
+            storageClassName: "longhorn-wait"
       resourcesRequirements:
         limits:
           cpu: "0.5"
