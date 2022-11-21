@@ -1,6 +1,7 @@
 # Build a Kubernetes cluster using k3s via Ansible
 
 Author: <https://github.com/itwars>
+Adapted by : <https://github.com/scorbarieu>  for Rocky, HA control pane, postinstall scripts, app samples
 
 ## K3s Ansible Playbook
 
@@ -67,7 +68,7 @@ Start provisioning of the cluster using the following command:
 ansible-playbook site.yml -i inventory/my-cluster/hosts.ini
 ```
 
-## Kuebctl (OTIONNAL)
+## Kubectl (OTIONNAL)
 
 You can get access to your **Kubernetes** cluster from any of the nodes but also from your local machine:
 
@@ -235,12 +236,18 @@ kubectl create -f https://raw.githubusercontent.com/longhorn/longhorn/master/exa
 ### install Nifi on K8s
 Source
 https://konpyutaika.github.io/nifikop/docs/2_deploy_nifikop/1_quick_start
+
+#### create custom storage class with WaitForFirstConsumer bind mode
+```bash
+kubectl create -f appsamples/storageclass.yaml
+```
+
 #### zookeeper
 
 ```bash
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
-helm install zookeeper bitnami/zookeeper     --set resources.requests.memory=256Mi     --set resources.requests.cpu=250m     --set resources.limits.memory=256Mi     --set resources.limits.cpu=250m     --set global.storageClass=longhorn     --set networkPolicy.enabled=true     --set replicaCount=3 --namespace nifi --create-namespace
+helm install zookeeper bitnami/zookeeper     --set resources.requests.memory=256Mi     --set resources.requests.cpu=250m     --set resources.limits.memory=256Mi     --set resources.limits.cpu=250m     --set global.storageClass=longhorn-wait     --set networkPolicy.enabled=true     --set replicaCount=3 --namespace nifi --create-namespace
 ```
 
 
@@ -251,7 +258,7 @@ reference : https://github.com/konpyutaika/nifiko
 https://konpyutaika.github.io/nifikop
 
 ```bash
-helm install nifikop oci://ghcr.io/konpyutaika/helm-charts/nifikop --namespace=nifi --version 0.14.1 --set image.tag=v0.14.1-release --set resources.requests.memory=256Mi --set resources.requests.cpu=250m --set resources.limits.memory=256Mi --set resources.limits.cpu=250m --set namespaces={"nifi"}
+helm install nifikop oci://ghcr.io/konpyutaika/helm-charts/nifikop --namespace=nifi --version 0.15.0 --set image.tag=v0.15.0-release --set resources.requests.memory=256Mi --set resources.requests.cpu=250m --set resources.limits.memory=256Mi --set resources.limits.cpu=250m --set namespaces={"nifi"}
 ```
 
 #### Nifi simple cluster
