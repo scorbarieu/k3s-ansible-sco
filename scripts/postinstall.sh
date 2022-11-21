@@ -1,23 +1,17 @@
 #!/bin/bash
 
-CERTMANAGER_VERSION=v1.7.1
-ADMINPASSWORD=TestMeteo#2022
-LONGHORNUIUSER=longhorn; 
-LONGHORNUIPASSWORD=$ADMINPASSWORD;
-DATAPATH="/data/longhorn"
-#ADMINUSER=vagrant #requires sudo
-CLUSTERADMINUSER=corbarieus
-CLUSTERMASTER=nifif31-sidev.meteo.fr
+# you must update env.sh accordingly to your needs
+source env.sh
 
-
-
-if [ ! -f /usr/local/bin/helm ]; then
+HasHELM=$(which helm)
+if [ -z $HasHELM ]; then
     echo "########################### installing helm ###########################"
     curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
     sudo dnf install bash-completion
     helm completion bash | sudo tee /etc/bash_completion.d/kubectl > /dev/null
 fi
-if [ ! -f /usr/local/bin/kubectl ]; then
+HasKUBECTL=$(which kubectl)
+if [ -z $HasKUBECTL ]; then
     echo "########################### install kubectl ###########################"
     curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.25.0/bin/linux/amd64/kubectl
     chmod +x ./kubectl
