@@ -16,7 +16,7 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-body-size: 10000m
 spec:
   rules:
-  - host: "longhorn.poc.meteo.fr"
+  - host: "$LONGHORNDNS"
     http:
       paths:
       - pathType: Prefix

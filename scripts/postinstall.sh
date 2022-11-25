@@ -1,7 +1,15 @@
 #!/bin/bash
 
+#set -x
+
+SCRIPT_HOME="$( cd "$( dirname "${BASH_SOURCE[0]}"  )" && pwd  )"
+## name of the script
+SCRIPTNAME=`basename $0 .sh`
+
+echo "USAGE: scripts/postinstall.sh [ project ] will source envproject.sh"
 # you must update env.sh accordingly to your needs
-source env.sh
+echo "sourcing $SCRIPT_HOME/env$1.sh"
+source $SCRIPT_HOME/env$1.sh
 
 HasHELM=$(which helm)
 if [ -z $HasHELM ]; then
@@ -36,12 +44,12 @@ helm install cert-manager jetstack/cert-manager   --namespace cert-manager   --c
 
 echo "########################### install rancher ###########################"
 helm repo add rancher-stable https://releases.rancher.com/server-charts/stable
-kubectl create namespace cattle-system
-helm install rancher rancher-stable/rancher   --namespace cattle-system   --set hostname=rancher.poc.meteo.fr   --set bootstrapPassword=$ADMINPASSWORD
+helm install rancher rancher-stable/rancher --namespace cattle-system --create-namespace --set hostname=$RANCHERDNS   --set bootstrapPassword=$ADMINPASSWORD
 
 
 echo "########################### installing longhorn block storage for PV ###########################"
 echo "########################### checking longhorn pre-requisites ###########################"
+
 sudo dnf install jq -y # required by the script
 curl -sSfL https://raw.githubusercontent.com/longhorn/longhorn/v1.3.1/scripts/environment_check.sh | bash
 if [ $? == 0 ]; then
@@ -55,15 +63,15 @@ if [ $? == 0 ]; then
     --namespace longhorn-system \
     --create-namespace \
     --set defaultSettings.defaultDataPath=${DATAPATH}
-    #then set up the UI access
-    echo "${LONGHORNUIUSER}:$(openssl passwd -stdin -apr1 <<< ${LONGHORNUIPASSWORD})" >> auth
-    kubectl -n longhorn-system create secret generic basic-auth --from-file=auth
-    kubectl -n longhorn-system apply -f appsamples/longhorningress.yaml
-    # EXAMPLE create a storage class
-    kubectl create -f https://raw.githubusercontent.com/longhorn/longhorn/master/examples/storageclass.yaml
-    # EXAMPLE create a PV and pod (not WORKING on vagrant rocky8...yet... volome created but failed to attach to container)
-    # For some reason the volume fails to attach
-    kubectl create -f https://raw.githubusercontent.com/longhorn/longhorn/master/examples/pod_with_pvc.yaml
+    #then set up the UI access (not REQUIRED as Rancher provide UI access to longhorn )
+    # echo "${LONGHORNUIUSER}:$(openssl passwd -stdin -apr1 <<< ${LONGHORNUIPASSWORD})" >> auth
+    # kubectl -n longhorn-system create secret generic basic-auth --from-file=auth
+    # cat appsamples/longhorningress.yaml | envsubst | kubectl -n longhorn-system apply -f
+
+    # EXAMPLE create a storage class longhorn-wait
+    kubectl create -f appsamples/storageclass.yaml
+    # EXAMPLE create a PV and pod
+    kubectl create -f appsamples/pod_with_pvc.yaml
     echo "########################### checking longhorn is ok by looking if nay deployment below has failed  ###########################"
     kubectl get deployments.apps -n longhorn-system
 else

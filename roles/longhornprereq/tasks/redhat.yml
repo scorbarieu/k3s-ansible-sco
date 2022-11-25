@@ -1,0 +1,18 @@
+- name: Update all Redhat family packages to their latest version
+  ansible.builtin.dnf:
+    name: "*"
+    state: latest
+
+- name: Install iscsi-initiator-utils
+  ansible.builtin.dnf:
+    name: iscsi-initiator-utils
+    state: present
+  notify: 
+  - Enable iscsid
+  - Load iscsi_tcp
+
+- name: Install nfs-utils
+  ansible.builtin.dnf:
+    name: nfs-utils
+    state: present
+    

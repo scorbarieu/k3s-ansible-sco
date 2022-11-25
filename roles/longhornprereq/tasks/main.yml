@@ -1,0 +1,8 @@
+
+- name: Install longhorn prerequisites for RHEL OS family
+  import_tasks: redhat.yml
+  when: ansible_facts['os_family']|lower == 'redhat'
+
+- name: Install longhorn prerequisites for Debian OS family
+  import_tasks: debian.yml
+  when: ansible_facts['os_family']|lower == 'debian'

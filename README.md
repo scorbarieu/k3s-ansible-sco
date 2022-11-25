@@ -68,7 +68,7 @@ Start provisioning of the cluster using the following command:
 ansible-playbook site.yml -i inventory/my-cluster/hosts.ini
 ```
 
-## Kubectl (OTIONNAL)
+## Kubectl (OPTIONNAL)
 
 You can get access to your **Kubernetes** cluster from any of the nodes but also from your local machine:
 
@@ -127,8 +127,11 @@ on Windows:
 ## Post installs
 
 Feeling Lazy ? Run this script (but take a look below of what it does)
+FIRST make a copy of env.sh named env<project>.sh accordingly to your needs
+review the content of postinstall.sh then
+
 ```bash
-scripts/postinstall.sh
+scripts/postinstall.sh <project>
 ```
 
 ### check nodes (RECOMMENDED)
@@ -152,7 +155,7 @@ curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 ### helm auto completion (RECOMMENDED)
 ```bash
 sudo dnf install bash-completion
-helm completion bash | sudo tee /etc/bash_completion.d/kubectl > /dev/null
+helm completion bash | sudo tee /etc/bash_completion.d/helm > /dev/null
 ```
 on Windows:
 ```powershell
@@ -211,6 +214,7 @@ curl -sSfL https://raw.githubusercontent.com/longhorn/longhorn/v1.3.1/scripts/en
 
 ```bash
 # install longhorn
+# with kubectl
 # kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/master/deploy/longhorn.yaml
 # or with helm
 helm repo add longhorn https://charts.longhorn.io
@@ -223,11 +227,11 @@ helm install longhorn longhorn/longhorn \
 #then set up the UI access
 USER=<USERNAME_HERE>; PASSWORD=<PASSWORD_HERE>; echo "${USER}:$(openssl passwd -stdin -apr1 <<< ${PASSWORD})" >> auth
 kubectl -n longhorn-system create secret generic basic-auth --from-file=auth
-kubectl -n longhorn-system apply -f appsamples/longhorningress.yaml
-# EXAMPLE create a storage class
-kubectl create -f https://raw.githubusercontent.com/longhorn/longhorn/master/examples/storageclass.yaml
-# EXAMPLE create a PV and pod (not WORKING on vagrant rocky8...yet... volome created but failed to attach to container)
-kubectl create -f https://raw.githubusercontent.com/longhorn/longhorn/master/examples/pod_with_pvc.yaml
+cat appsamples/longhorningress.yaml | envsubst | kubectl -n longhorn-system apply -f
+# EXAMPLE create a storage class longhorn-wait
+kubectl create -f appsamples/storageclass.yaml
+# EXAMPLE create a PV and pod
+kubectl create -f appsamples/pod_with_pvc.yaml
 
 ```
 

@@ -1,0 +1,11 @@
+# roles/example/tasks/main.yml
+- name: Load iscsi_tcp
+  community.general.modprobe:
+    name: iscsi_tcp
+    state: present
+
+- name: Enable iscsid
+  ansible.builtin.systemd:
+    state: started
+    enabled: yes
+    name: iscsid
