@@ -232,9 +232,16 @@ cat appsamples/longhorningress.yaml | envsubst | kubectl -n longhorn-system appl
 kubectl create -f appsamples/storageclass.yaml
 # EXAMPLE create a PV and pod
 kubectl create -f appsamples/pod_with_pvc.yaml
+# finally remove local-path as the default storage class to ensure longhorn is default
+kubectl patch storageclass local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"false"}}}'
 
 ```
+#### Install Epnio for devops/PaaS
+Please check prereq at https://docs.epinio.io/references/system_requirements/global
+```bash
+helm repo add epinio https://epinio.github.io/helm-charts
 
+```
 ## OPTIONNAL INSTALL/EXAMPLES
 
 ### install Nifi on K8s
@@ -244,6 +251,8 @@ https://konpyutaika.github.io/nifikop/docs/2_deploy_nifikop/1_quick_start
 #### create custom storage class with WaitForFirstConsumer bind mode
 ```bash
 kubectl create -f appsamples/storageclass.yaml
+INGRESS_IP=$(kubectl get svc -n kube-system traefik -o jsonpath={@.status.loadBalancer.ingress})
+
 ```
 
 #### zookeeper

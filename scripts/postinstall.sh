@@ -72,8 +72,10 @@ if [ $? == 0 ]; then
     kubectl create -f appsamples/storageclass.yaml
     # EXAMPLE create a PV and pod
     kubectl create -f appsamples/pod_with_pvc.yaml
-    echo "########################### checking longhorn is ok by looking if nay deployment below has failed  ###########################"
+    echo "########################### checking longhorn is ok by looking if any deployment below has failed  ###########################"
     kubectl get deployments.apps -n longhorn-system
+    echo "########################### unset local-path as default storage  ###########################"
+    kubectl patch storageclass local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"false"}}}'
 else
     echo "########################### be sure pre-requistes for longhorn have been installed...skipping ###########################"
 fi
